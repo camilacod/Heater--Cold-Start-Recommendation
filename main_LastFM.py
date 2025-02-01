@@ -26,7 +26,7 @@ def main():
     recall_at = [20, 50, 100]
     eval_batch_size = 5000  # the batch size when test
     eval_every = args.eval_every
-    num_epoch = 100
+    num_epoch = 30
     neg = args.neg
 
     _lr = args.lr
@@ -67,6 +67,10 @@ def main():
         tf.global_variables_initializer().run()
         tf.local_variables_initializer().run()
         timer.toc('initialized tf')
+
+        # Create saver for model checkpoints
+        saver = tf.train.Saver()
+        checkpoint_dir = './checkpoints/lastfm_model'
 
         n_step = 0
         best_recall = 0
@@ -141,6 +145,9 @@ def main():
                                                                                  eval_data=test_eval)
                 best_test_recall = test_recall
                 best_epoch = epoch
+
+            # Save model checkpoint
+            saver.save(sess, checkpoint_dir + '/model.ckpt', global_step=epoch)
 
             timer.toc('%d [%d]b loss=%.4f reg_loss=%.4f diff_loss=%.4f expert_loss=%.4f best[%d]' % (
                 epoch, len(data_batch), loss_epoch, reg_loss_epoch, diff_loss_epoch, expert_loss_epoch, best_step
